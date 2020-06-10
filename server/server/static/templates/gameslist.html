@@ -1,7 +1,12 @@
 {% for game in games %}
-<dir>
-    <img src="https://steamcdn-a.akamaihd.net/steam/apps/{{ game.id }}/header.jpg">
-    {{ game.name }}
-</dir>
-<br>
+<a href="app?id={{ game.id }}">
+    <dir>
+        <img src="https://steamcdn-a.akamaihd.net/steam/apps/{{ game.id }}/header.jpg">
+        {{ game.name }}
+        <!-- {{ game.description }} -->
+        {{ game.genre }}
+        {{ game.price }}
+    </dir>
+    <br>
+</a>
 {% endfor %}

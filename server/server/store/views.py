@@ -54,3 +54,4 @@ def app():
     -----------
     Returns the current status of the traffic light.
     '''
+    return render_template('app.html', game=Games.get(int(request.args.get('id'))))

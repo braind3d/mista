@@ -1,5 +1,6 @@
 from server.database.database import Database
 
+
 class Games:
     def __init__(self, id, name, description, reviews, release_data, developer, publisher, genre, minimum_requirements, recommended_requirements, price):
         self.id = id
@@ -43,7 +44,6 @@ class Games:
                         page_size,
                         page_size*(page_number - 1))).fetchall()
                 return [Games(*row) for row in rows]
-            
 
             rows = db.execute('SELECT * FROM games WHERE instr(name, "{}") > 0 LIMIT {} OFFSET {}'.format(
                     search_query,
@@ -51,3 +51,9 @@ class Games:
                     page_size*(page_number - 1))).fetchall()
 
             return [Games(*row) for row in rows]
+
+    @staticmethod
+    def get(id):
+        with Database() as db:
+            rows = db.execute('SELECT * FROM games WHERE id = {}'.format(id)).fetchall()
+            return [Games(*row) for row in rows][0]
