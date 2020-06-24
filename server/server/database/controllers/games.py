@@ -15,45 +15,75 @@ class Games:
         self.recommended_requirements = recommended_requirements
         self.price = price
 
-    def save(self):
-        with Database() as db:
-            db.execute(
-                '''
-                INSERT INTO post
-                VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (
-                    self.title,
-                    self.id,
-                    self.name,
-                    self.description,
-                    self.reviews,
-                    self.release_data,
-                    self.developer,
-                    self.publisher,
-                    self.genre,
-                    self.minimum_requirements,
-                    self.recommended_requirements,
-                    self.price))
-            return self
-
     @staticmethod
     def all(page_number, page_size, search_query=None):
         with Database() as db:
             if not search_query:
-                rows = db.execute('SELECT * FROM games LIMIT {} OFFSET {}'.format(
-                        page_size,
-                        page_size*(page_number - 1))).fetchall()
-                return [Games(*row) for row in rows]
-
-            rows = db.execute('SELECT * FROM games WHERE instr(name, "{}") > 0 LIMIT {} OFFSET {}'.format(
-                    search_query,
+                rows = db.execute('''select distinct games.game_id, games.name, games.description, games.all_reviews, games.release_date,developers.developer_name, publishers.publisher_name, genres.genre_name, games.minimum_requirements, games.recommended_requirements, games.original_price 
+                    FROM games
+                    LEFT JOIN game_developers
+                    ON games.game_id = game_developers.game_id 
+                    LEFT JOIN developers
+                    ON game_developers.developer_id = developers.developer_id
+                    LEFT JOIN game_publishers
+                    ON games.game_id = game_publishers.game_id
+                    LEFT JOIN publishers 
+                    ON game_publishers.publisher_id = publishers.publisher_id
+                    LEFT JOIN game_genres
+                    ON games.game_id = game_genres.game_id
+                    LEFT JOIN genres
+                    ON game_genres.genre_id = genres.genre_id
+                    GROUP BY games.game_id
+                    LIMIT {} OFFSET {}'''
+                    .format(
                     page_size,
                     page_size*(page_number - 1))).fetchall()
+                return [Games(*row) for row in rows]
+
+            rows = db.execute('''select distinct games.game_id, games.name, games.description, games.all_reviews, games.release_date,developers.developer_name, publishers.publisher_name, genres.genre_name, games.minimum_requirements, games.recommended_requirements, games.original_price 
+                FROM games
+                LEFT JOIN game_developers
+                ON games.game_id = game_developers.game_id 
+                LEFT JOIN developers
+                ON game_developers.developer_id = developers.developer_id
+                LEFT JOIN game_publishers
+                ON games.game_id = game_publishers.game_id
+                LEFT JOIN publishers 
+                ON game_publishers.publisher_id = publishers.publisher_id
+                LEFT JOIN game_genres
+                ON games.game_id = game_genres.game_id
+                LEFT JOIN genres
+                ON game_genres.genre_id = genres.genre_id
+                WHERE instr(name, "{}") > 0
+                GROUP BY games.game_id
+                LIMIT {} OFFSET {}
+                '''
+                .format(
+                search_query,
+                page_size,
+                page_size*(page_number - 1))).fetchall()
 
             return [Games(*row) for row in rows]
 
     @staticmethod
     def get(id):
         with Database() as db:
-            rows = db.execute('SELECT * FROM games WHERE id = {}'.format(id)).fetchall()
+            rows = db.execute(
+                '''SELECT games.game_id, games.name, games.description, games.all_reviews, games.release_date,developers.developer_name, publishers.publisher_name, genres.genre_name, games.minimum_requirements, games.recommended_requirements, games.original_price 
+                    FROM games
+                    LEFT JOIN game_developers
+                    ON games.game_id = game_developers.game_id 
+                    LEFT JOIN developers
+                    ON game_developers.developer_id = developers.developer_id
+                    LEFT JOIN game_publishers
+                    ON games.game_id = game_publishers.game_id
+                    LEFT JOIN publishers 
+                    ON game_publishers.publisher_id = publishers.publisher_id
+                    LEFT JOIN game_genres
+                    ON games.game_id = game_genres.game_id
+                    LEFT JOIN genres
+                    ON game_genres.genre_id = genres.genre_id
+                    WHERE games.game_id = {}
+                    GROUP BY games.game_id'''
+            .format(id)).fetchall()
             return [Games(*row) for row in rows][0]
